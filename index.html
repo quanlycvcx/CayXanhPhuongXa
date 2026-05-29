@@ -3,243 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Công viên - Cây xanh khu vực Thủ Đức - Dashboard Thống kê</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Thư viện hiển thị nhãn trên biểu đồ tròn -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <title>Tra cứu Tuyến đường khu vực Bình Dương </title>
     <style>
-        :root { --primary: #1b5e20; --secondary: #2e7d32; --bg: #f4f7f6; --text: #2c3e50; --white: #ffffff; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
-        
-        .layout { display: grid; grid-template-columns: 320px 1fr; gap: 25px; max-width: 1700px; margin: auto; }
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #27ae60;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+        }
 
-        /* Sidebar Filters */
-        .sidebar { background: var(--white); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); height: fit-content; position: sticky; top: 20px; }
-        .sidebar h2 { color: var(--primary); font-size: 18px; text-transform: uppercase; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
-        .filter-group { margin-bottom: 18px; }
-        .filter-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 8px; color: #64748b; }
-        input { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 14px; transition: 0.3s; }
-        input:focus { border-color: var(--secondary); outline: none; box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1); }
-        
-        .btn-search { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .btn-search:hover { background: #144317; transform: translateY(-2px); }
-        .btn-reset { width: 100%; background: none; color: #94a3b8; border: none; margin-top: 15px; cursor: pointer; font-size: 13px; text-decoration: underline; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-        /* Main Dashboard */
-        .main-content { display: flex; flex-direction: column; gap: 25px; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        /* KPI Cards */
-        .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .kpi-card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; border-left: 5px solid var(--primary); }
-        .kpi-card span { font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .kpi-card b { font-size: 28px; color: var(--primary); margin-top: 5px; }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
 
-        /* Statistics Row */
-        .stats-row { display: grid; grid-template-columns: 450px 1fr; gap: 25px; }
-        .glass-card { background: var(--white); padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .glass-card h3 { margin-top: 0; font-size: 16px; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; }
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 15px;
+        }
 
-        /* Thống kê Table */
-        .summary-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .summary-table th { text-align: left; padding: 12px; color: #64748b; border-bottom: 2px solid #f1f5f9; }
-        .summary-table td { padding: 12px; border-bottom: 1px solid #f8fafc; }
-        .badge-count { background: #e8f5e9; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-weight: bold; }
+        header h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
 
-        /* Data Table */
-        .table-area { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
-        .table-resizer { overflow-x: auto; max-height: 500px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 2000px; }
-        th { background: #f8fafc; color: #64748b; position: sticky; top: 0; padding: 15px; text-align: left; font-size: 12px; border-bottom: 2px solid #eee; z-index: 5; }
-        td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        tr:hover { background: #fdfdfd; }
+        header p {
+            color: #666;
+            font-size: 14px;
+        }
 
-        #pieChart { max-height: 300px; width: 100% !important; }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .status-loading { background: #ffeaa7; color: #d63031; }
+        .status-success { background: #badc58; color: #6ab04c; }
+        .status-error { background: #ff7675; color: #d63031; }
+
+        .search-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--primary-color);
+        }
+
+        .form-group input {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(39, 174, 96, 0.2);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: #444;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f2f6;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 30px;
+            color: #d63031;
+            font-weight: bold;
+            font-size: 16px;
+            background: #fff5f5;
+            border: 1px dashed #ff8787;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            header h1 { font-size: 20px; }
+            td, th { padding: 10px; font-size: 13px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="layout">
-    <!-- Cột trái: Bộ lọc -->
-    <aside class="sidebar">
-        <h2>Bộ lọc tìm kiếm</h2>
-        <div id="status" style="font-size: 12px; margin-bottom: 20px; color: #ef6c00;">🔄 Đang tải dữ liệu...</div>
-        
-        <div class="filter-group"><label>Phường</label><input type="text" id="filterPhuong" placeholder="Vd: An Khánh..."></div>
-        <div class="filter-group"><label>Tên đường</label><input type="text" id="filterDuong" placeholder="Vd: Trần Não..."></div>
-        <div class="filter-group"><label>Tên cây</label><input type="text" id="filterLoai" placeholder="Vd: Sao đen..."></div>
-        <div class="filter-group"><label>Số hiệu cây</label><input type="text" id="filterSoHieu" placeholder="Nhập số hiệu..."></div>
-        
-        <button id="searchBtn" class="btn-search" onclick="performFilter()" disabled>TRA CỨU DỮ LIỆU</button>
-        <button class="btn-reset" onclick="resetFilters()">Đặt lại bộ lọc</button>
-    </aside>
-    
-    <!-- Cột phải: Dashboard -->
-    <main class="main-content">
-        <!-- KPI Cards -->
-        <div class="kpi-row">
-            <div class="kpi-card"><span>Tổng số cây</span><b id="kpiTotal">0</b></div>
-            <div class="kpi-card"><span>Số loài cây</span><b id="kpiSpecies">0</b></div>
-            <div class="kpi-card"><span>Tuyến đường</span><b id="kpiStreets">0</b></div>
-        </div>
+<div class="container">
+    <header>
+        <h1>TRA CỨU DANH MỤC TUYẾN ĐƯỜNG</h1>
+        <p>Phục vụ công tác quản lý, duy tu và giám sát cây xanh </p>
+        <div id="dataStatus" class="status-badge status-loading">Đang kết nối dữ liệu ...</div>
+    </header>
 
-        <!-- Charts & Stats -->
-        <div class="stats-row">
-            <div class="glass-card">
-                <h3>Tỉ lệ cơ cấu loài cây (%)</h3>
-                <canvas id="pieChart"></canvas>
-            </div>
-            <div class="glass-card">
-                <h3>Bảng tổng hợp phân bố (Top 10)</h3>
-                <table class="summary-table">
-                    <thead>
-                        <tr>
-                            <th>Tên Đường / Khu vực</th>
-                            <th>Số lượng cây</th>
-                            <th>Tỉ trọng</th>
-                        </tr>
+    <div class="search-box">
+        <div class="form-group">
+            <label for="searchStreet">Tên Tuyến Đường (Viết ngắn gọn/có dấu hoặc không dấu)</label>
+            <input type="text" id="searchStreet" placeholder="Ví dụ: ntmk hoặc Nguyễn Thị Minh Khai...">
+        </div>
+        <div class="form-group">
+            <label for="searchWard">Tên Phường / Xã</label>
+            <input type="text" id="searchWard" placeholder="Ví dụ: Thủ Dầu Một, Bình Dương...">
+        </div>
+        <div class="form-group">
+            <label for="searchCompany">Đơn vị duy tu</label>
+            <input type="text" id="searchCompany" placeholder="Ví dụ: Công viên, Đô thị, DV công ích...">
+        </div>
+    </div>
+
+    <div id="resultArea">
+        <div class="table-container" id="tableContainer" style="display: none;">
+            <table id="resultTable">
+                <thead id="tableHeader">
                     </thead>
-                    <tbody id="summaryBody">
-                        <tr><td colspan="3" style="text-align:center; color:#94a3b8; padding:40px;">Chưa có dữ liệu thống kê</td></tr>
+                <tbody id="tableBody">
                     </tbody>
-                </table>
-            </div>
+            </table>
         </div>
-        
-        <!-- Full Table -->
-        <div class="table-area">
-            <div class="table-resizer">
-                <table id="mainTable">
-                    <thead id="tableHead"></thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
+        <div id="emptyMessage" class="no-result" style="display: none;">
+            Tuyến đường không thuộc phạm vi Trung tâm quản lý.
         </div>
-    </main>
+    </div>
 </div>
 
 <script>
-    const DATA_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiHzB1J4YZQeBZt-LpVGJDwdOwauzcxklhhNzOTgmxUsiKR_zdpr6qs28yLUnAG_MfWAshhe3eFG9W/pub?gid=195844642&single=true&output=csv';
-    let db = [];
+    // Đường dẫn công khai CSV từ Google Sheets của bạn
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSSDBsLFYFoxn-SE2MQDETNgQrri1V3PxqEhWKxBghGXJr1FNb4LkjXg1PcawYnli_yFVQeyv2-PMv7/pub?gid=195844642&single=true&output=tsv';
+    
+    let rawData = [];
     let headers = [];
-    let pieChart;
 
-    Chart.register(ChartDataLabels); // Đăng ký plugin hiển thị nhãn
+    // Hàm chuyển đổi chuỗi tiếng Việt sang không dấu để tìm kiếm thông minh cực chính xác
+    function removeVietnameseTones(str) {
+        if (!str) return '';
+        str = str.toLowerCase();
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+        str = str.replace(/ò|ó|ọ|ỏ|ã|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+        str = str.replace(/đ/g, "d");
+        // Hỗ trợ viết tắt bằng cách lấy các ký tự đầu (ví dụ: ntmk -> nguyen thi minh khai)
+        return str.trim();
+    }
 
-    window.onload = function() {
-        Papa.parse(DATA_URL, {
-            download: true, skipEmptyLines: true,
-            complete: function(results) {
-                db = results.data;
-                headers = db[0];
-                document.getElementById('tableHead').innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
-                document.getElementById('status').innerHTML = "✅ Dữ liệu trực tuyến đã sẵn sàng";
-                document.getElementById('searchBtn').disabled = false;
-                
-                // Khởi tạo mặc định
-                performFilter(); 
+    // Hàm xử lý phân tách file CSV (bao gồm xử lý dấu ngoặc kép an toàn)
+    function parseCSV(text) {
+        let lines = text.split(/\r\n|\n/);
+        let result = [];
+        for (let i = 0; i < lines.length; i++) {
+            if (!lines[i]) continue;
+            let row = [];
+            let inQuotes = false;
+            let current = '';
+            for (let j = 0; j < lines[i].length; j++) {
+                let char = lines[i][j];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    row.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
             }
+            row.push(current.trim());
+            result.push(row);
+        }
+        return result;
+    }
+
+    // Tải dữ liệu từ Google Sheets
+    window.addEventListener('DOMContentLoaded', () => {
+        fetch(csvUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('Không thể tải dữ liệu từ liên kết Google Sheets.');
+                return response.text();
+            })
+            .then(text => {
+                const parsedData = parseCSV(text);
+                if (parsedData.length > 0) {
+                    headers = parsedData[0]; // Lấy danh sách tiêu đề cột
+                    
+                    // Chuyển đổi mảng thành Object danh sách để dễ thao tác
+                    rawData = parsedData.slice(1).map(row => {
+                        let item = {};
+                        headers.forEach((header, index) => {
+                            item[header] = row[index] || '';
+                        });
+                        return item;
+                    });
+
+                    // Khởi tạo tiêu đề bảng động dựa trên dữ liệu gốc
+                    const headerHtml = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+                    document.getElementById('tableHeader').innerHTML = headerHtml;
+
+                    // Cập nhật trạng thái
+                    const status = document.getElementById('dataStatus');
+                    status.innerText = `Đã tải thành công ${rawData.length} tuyến đường`;
+                    status.className = 'status-badge status-success';
+
+                    // Đăng ký sự kiện tìm kiếm thời gian thực (Real-time Input)
+                    document.getElementById('searchStreet').addEventListener('input', performSearch);
+                    document.getElementById('searchWard').addEventListener('input', performSearch);
+                    document.getElementById('searchCompany').addEventListener('input', performSearch);
+                    
+                    // Hiển thị toàn bộ dữ liệu lúc ban đầu
+                    performSearch();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                const status = document.getElementById('dataStatus');
+                status.innerText = 'Lỗi: Không thể kết nối dữ liệu! Hãy kiểm tra quyền chia sẻ link Google Sheets.';
+                status.className = 'status-badge status-error';
+            });
+    });
+
+    // Hàm thực hiện tra cứu
+    function performSearch() {
+        const txtStreet = removeVietnameseTones(document.getElementById('searchStreet').value);
+        const txtWard = removeVietnameseTones(document.getElementById('searchWard').value);
+        const txtCompany = removeVietnameseTones(document.getElementById('searchCompany').value);
+
+        // Tự động nhận diện các cột phù hợp để tra cứu (Dựa trên từ khóa phổ biến trong tiêu đề)
+        const colStreet = headers.find(h => removeVietnameseTones(h).includes('duong') || removeVietnameseTones(h).includes('tuyen')) || headers[1] || '';
+        const colWard = headers.find(h => removeVietnameseTones(h).includes('phuong') || removeVietnameseTones(h).includes('xa')) || headers[2] || '';
+        const colCompany = headers.find(h => removeVietnameseTones(h).includes('duy tu') || removeVietnameseTones(h).includes('don vi') || removeVietnameseTones(h).includes('quan ly')) || headers[headers.length - 1] || '';
+
+        // Tiến hành lọc dữ liệu dựa trên đầu vào viết tắt hoặc viết ngắn gọn
+        const filtered = rawData.filter(item => {
+            const valStreet = removeVietnameseTones(item[colStreet]);
+            const valWard = removeVietnameseTones(item[colWard]);
+            const valCompany = removeVietnameseTones(item[colCompany]);
+
+            // Kiểm tra điều kiện tìm kiếm viết tắt (Ví dụ: "nts" khớp với "Nguyễn Thị Thập")
+            const matchStreet = txtStreet === '' || valStreet.includes(txtStreet) || getInitials(valStreet).includes(txtStreet);
+            const matchWard = txtWard === '' || valWard.includes(txtWard);
+            const matchCompany = txtCompany === '' || valCompany.includes(txtCompany) || getInitials(valCompany).includes(txtCompany);
+
+            return matchStreet && matchWard && matchCompany;
         });
-    };
 
-    function performFilter() {
-        const qPhuong = document.getElementById('filterPhuong').value.toLowerCase().trim();
-        const qDuong = document.getElementById('filterDuong').value.toLowerCase().trim();
-        const qLoai = document.getElementById('filterLoai').value.toLowerCase().trim();
-        const qSoHieu = document.getElementById('filterSoHieu').value.toLowerCase().trim();
-
-        const filtered = db.slice(1).filter(row => {
-            return (!qPhuong || (row[6] && row[6].toLowerCase().includes(qPhuong))) &&
-                   (!qDuong || (row[8] && row[8].toLowerCase().includes(qDuong))) &&
-                   (!qLoai || (row[10] && row[10].toLowerCase().includes(qLoai))) &&
-                   (!qSoHieu || (row[11] && row[11].toLowerCase().includes(qSoHieu)));
-        });
-
-        updateKPIs(filtered);
-        updateSummaryTable(filtered);
-        updatePieChart(filtered);
         renderTable(filtered);
     }
 
-    function updateKPIs(data) {
-        document.getElementById('kpiTotal').innerText = data.length.toLocaleString();
-        const species = new Set(data.map(r => r[10])).size;
-        const streets = new Set(data.map(r => r[8])).size;
-        document.getElementById('kpiSpecies').innerText = species;
-        document.getElementById('kpiStreets').innerText = streets;
+    // Hàm bổ trợ lấy ký tự viết tắt đầu của chuỗi (Nguyễn Văn Cừ -> nvc)
+    function getInitials(str) {
+        return str.split(' ').map(word => word[0]).join('');
     }
 
-    function updateSummaryTable(data) {
-        const counts = {};
-        data.forEach(row => {
-            const key = row[8] || "Khác";
-            counts[key] = (counts[key] || 0) + 1;
-        });
-
-        const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10);
-        const tbody = document.getElementById('summaryBody');
-        tbody.innerHTML = sorted.map(([name, count]) => {
-            const percent = ((count / data.length) * 100).toFixed(1);
-            return `<tr>
-                <td><b>${name}</b></td>
-                <td><span class="badge-count">${count} cây</span></td>
-                <td style="color:#64748b">${percent}%</td>
-            </tr>`;
-        }).join('');
-    }
-
-    function updatePieChart(data) {
-        const counts = {};
-        data.forEach(row => {
-            const val = row[10] || "Khác";
-            counts[val] = (counts[val] || 0) + 1;
-        });
-
-        const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 6);
-        const labels = sorted.map(d => d[0]);
-        const values = sorted.map(d => d[1]);
-
-        if (pieChart) pieChart.destroy();
-        const ctx = document.getElementById('pieChart').getContext('2d');
-        pieChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: values,
-                    backgroundColor: ['#1b5e20', '#388e3c', '#66bb6a', '#81c784', '#a5d6a7', '#f1f8e9']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
-                    datalabels: {
-                        color: '#fff',
-                        font: { weight: 'bold', size: 10 },
-                        formatter: (value, ctx) => {
-                            let sum = 0;
-                            let dataArr = ctx.chart.data.datasets[0].data;
-                            dataArr.map(data => { sum += data; });
-                            return ((value * 100) / sum).toFixed(1) + "%";
-                        }
-                    }
-                }
-            }
-        });
-    }
-
+    // Xuất dữ liệu ra bảng giao diện
     function renderTable(data) {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = data.slice(0, 500).map(row => 
-            `<tr>${row.map(cell => `<td>${cell || ''}</td>`).join('')}</tr>`
-        ).join('');
-    }
+        const tableContainer = document.getElementById('tableContainer');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const tableBody = document.getElementById('tableBody');
 
-    function resetFilters() {
-        document.querySelectorAll('.sidebar input').forEach(i => i.value = "");
-        performFilter();
+        if (data.length === 0) {
+            tableContainer.style.display = 'none';
+            emptyMessage.style.display = 'block';
+        } else {
+            emptyMessage.style.display = 'none';
+            tableContainer.style.display = 'block';
+
+            let bodyHtml = '';
+            data.forEach(item => {
+                bodyHtml += 'tr';
+                bodyHtml += '<tr>' + headers.map(h => `<td>${item[h]}</td>`).join('') + '</tr>';
+            });
+            tableBody.innerHTML = bodyHtml;
+        }
     }
 </script>
 
