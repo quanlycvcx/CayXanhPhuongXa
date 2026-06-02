@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Công viên - Cây xanh</title>
+    <title>Hệ Thống Quản Lý Công viên - Cây xanh trên địa bàn phường xã</title>
     <!-- Thư viện OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
@@ -185,10 +185,10 @@
 
 <div class="container">
     <header>
-        <h1>HỆ THỐNG QUẢN LÝ CÔNG VIÊN - CÂY XANH</h1>
+        <h1>HỆ THỐNG QUẢN LÝ CÔNG VIÊN CÂY XANH CÂY XANH TRÊN ĐỊA BÀN PHƯỜNG XÃ</h1>
         <div class="status-group">
-            <div id="statusTD" class="status-badge st-loading">Khu vực Thủ Đức: Đang tải...</div>
-            <div id="statusBD" class="status-badge st-loading">Khu vực Bình Dương: Đang tải...</div>
+            <div id="statusTD" class="status-badge st-loading">Thủ Đức: Đang tải...</div>
+            <div id="statusBD" class="status-badge st-loading">Bình Dương: Đang tải...</div>
         </div>
     </header>
 
@@ -286,8 +286,8 @@
 
 <script>
     // --- CẤU HÌNH ĐƯỜNG DẪN DỮ LIỆU ---
-    const URL_TD = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSSDBsLFYFoxn-SE2MQDETNgQrri1V3PxqEhWKxBghGXJr1FNb4LkjXg1PcawYnli_yFVQeyv2-PMv7/pub?gid=195844642&single=true&output=tsv';
-    const URL_BD = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKUfkZtVRIva2X9gwaOKo2ZNMHw2h1BZce-9-MQ4rei0kWY339PCY9WDWK7vjM7uQyRPAyZVPqDUU-/pub?gid=195844642&single=true&output=tsv';
+    const URL_TD = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTI_VZZmUIfUsP7T-70cOutrS8Bovdm6-LsHmQkvNB4Tf8TQILOadThikMw59YLDsMwgYzS_xkI3q3Y/pub?gid=195844642&single=true&output=tsv';
+    const URL_BD = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTqzJojgx6myCBljQXJbMqjsC2Ru3gSJ0pOT7zLWgUoVYIwWCIb1QkAtd2QlRPfvQ8OaeOuPsTDCGwI/pub?gid=195844642&single=true&output=tsv';
 
     let dataTD = [], headersTD = [];
     let dataBD = [], headersBD = [];
@@ -353,7 +353,7 @@
     function updateStatus(id, name, len) {
         const el = document.getElementById(id);
         el.className = 'status-badge st-success';
-        el.innerText = `${name === 'TD' ? 'Khu vực Thủ Đức' : 'khu vực Bình Dương'}: ${len} tuyến`;
+        el.innerText = `${name === 'TD' ? 'Thủ Đức' : 'Bình Dương'}: ${len} tuyến`;
     }
 
     // --- TÌM KIẾM ---
