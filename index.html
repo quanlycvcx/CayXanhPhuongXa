@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Công viên - Cây xanh trên địa bàn phường xã</title>
-    <!-- Thư viện OCR -->
+    <title>Hệ Thống Quản Lý Công Viên - Cây Xanh Tích Hợp</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
@@ -15,6 +14,9 @@
             --text: #202124;
             --text-secondary: #5f6368;
             --border: #dadce0;
+            --group-1: #e8f0fe;
+            --group-2: #e6f4ea;
+            --group-3: #ffeeee;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
@@ -23,7 +25,7 @@
 
         .container {
             width: 100%;
-            max-width: 1350px;
+            max-width: 1400px;
             margin: 0 auto;
             background: var(--card-bg);
             border-radius: 12px;
@@ -39,52 +41,87 @@
             text-align: center;
             border-bottom: 1px solid var(--border);
         }
-        header h1 { color: var(--primary); font-size: 22px; text-transform: uppercase; margin-bottom: 10px; }
+        header h1 { color: var(--primary); font-size: 24px; text-transform: uppercase; margin-bottom: 15px; }
         
-        .status-group { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .status-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: #f1f3f4;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: fit-content;
+            margin: 0 auto;
+        }
+        .status-section { display: flex; flex-direction: column; gap: 5px; align-items: center; padding: 0 10px; }
+        .status-section-title { font-size: 11px; font-weight: bold; color: var(--text-secondary); text-transform: uppercase;}
+        .status-group { display: flex; gap: 8px; }
         .status-badge {
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
         }
         .st-loading { background: #fff4e5; color: #d35400; }
         .st-success { background: #e6f4ea; color: #1e8e3e; }
         .st-error { background: #fce8e6; color: #d93025; }
 
-        /* Tabs Navigation */
-        .nav-tabs {
-            display: flex;
+        /* Phân nhóm Nav Tabs */
+        .nav-container {
             background: #f1f3f4;
-            padding: 10px 20px 0;
             border-bottom: 1px solid var(--border);
-            gap: 5px;
+            padding: 10px 20px 0;
         }
+        .tab-groups {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .tab-group-box {
+            display: flex;
+            padding: 5px 8px;
+            border-radius: 8px 8px 0 0;
+            gap: 4px;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+        .tg-1 { background-color: #f4f8ff; }
+        .tg-2 { background-color: #f2fbf5; }
+        .tg-3 { background-color: #fffafaff; }
+        
+        .group-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: absolute;
+            margin-top: -22px;
+            margin-left: 5px;
+            color: var(--text-secondary);
+        }
+
         .tab-link {
-            padding: 12px 20px;
+            padding: 10px 14px;
             cursor: pointer;
-            border: none;
+            border: 1px solid transparent;
             background: none;
             font-weight: 600;
             color: var(--text-secondary);
-            border-radius: 8px 8px 0 0;
-            transition: 0.3s;
-            font-size: 14px;
+            border-radius: 6px 6px 0 0;
+            transition: 0.2s;
+            font-size: 13px;
         }
-        .tab-link:hover { background: #e8eaed; }
-        .tab-link.active {
-            background: #fff;
-            color: var(--primary);
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            border: 1px solid var(--border);
-            border-bottom: 2px solid #fff;
-            margin-bottom: -1px;
-        }
+        .tab-link:hover { background: rgba(0,0,0,0.05); }
+        
+        /* Màu Tab Active theo nhóm */
+        .tg-1 .tab-link.active { background: #fff; color: var(--primary); border: 1px solid var(--border); border-bottom: 2px solid #fff; margin-bottom: -6px; z-index: 2; }
+        .tg-2 .tab-link.active { background: #fff; color: var(--accent); border: 1px solid var(--border); border-bottom: 2px solid #fff; margin-bottom: -6px; z-index: 2; }
+        .tg-3 .tab-link.active { background: #fff; color: #e03131; border: 1px solid var(--border); border-bottom: 2px solid #fff; margin-bottom: -6px; z-index: 2; }
 
         .tab-content { display: none; padding: 25px; }
         .tab-content.active { display: block; }
 
-        /* Search Styles (Common) */
+        /* Bộ lọc Tìm kiếm */
         .search-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -104,7 +141,7 @@
             font-size: 14px;
         }
 
-        /* Table Styles */
+        /* Bảng dữ liệu */
         .table-container {
             overflow-x: auto;
             border: 1px solid var(--border);
@@ -126,7 +163,7 @@
         td { padding: 10px 15px; border-bottom: 1px solid var(--border); background: #fff; }
         tr:hover td { background: #f8f9fa; }
 
-        /* OCR Styles */
+        /* Giao diện OCR */
         .ocr-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 850px) { .ocr-layout { grid-template-columns: 1fr; } }
 
@@ -185,72 +222,92 @@
 
 <div class="container">
     <header>
-        <h1>HỆ THỐNG QUẢN LÝ CÔNG VIÊN CÂY XANH CÂY XANH TRÊN ĐỊA BÀN PHƯỜNG XÃ</h1>
-        <div class="status-group">
-            <div id="statusTD" class="status-badge st-loading">Thủ Đức: Đang tải...</div>
-            <div id="statusBD" class="status-badge st-loading">Bình Dương: Đang tải...</div>
+        <h1>HỆ THỐNG QUẢN LÝ CÔNG VIÊN CÂY XANH </h1>
+        <div class="status-container">
+            <div class="status-section">
+                <span class="status-section-title">Trung tâm Quản lý </span>
+                <div class="status-group">
+                    <div id="statusTD" class="status-badge st-loading">Thủ Đức: Đang tải...</div>
+                    <div id="statusBD" class="status-badge st-loading">Bình Dương: Đang tải...</div>
+                </div>
+            </div>
+            <div class="status-section">
+                <span class="status-section-title">Phường Xã quản lý / Xã</span>
+                <div class="status-group">
+                    <div id="statusTD_Xa" class="status-badge st-loading">Thủ Đức: Đang tải...</div>
+                    <div id="statusBD_Xa" class="status-badge st-loading">Bình Dương: Đang tải...</div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <div class="nav-tabs">
-        <button class="tab-link active" onclick="switchTab(event, 'tabTD')">Tuyến đường khu vực Thủ Đức cũ</button>
-        <button class="tab-link" onclick="switchTab(event, 'tabBD')">Tuyến đường khu vực Bình Dương cũ</button>
-        <button class="tab-link" onclick="switchTab(event, 'tabOCR')">Trích tọa độ từ ảnh</button>
+    <div class="nav-container">
+        <div class="tab-groups">
+            <div class="tab-group-box tg-1">
+                <span class="group-label">Trung tâm Quản lý</span>
+                <button class="tab-link active" onclick="switchTab(event, 'tabTD')">Tuyến đường Thủ Đức</button>
+                <button class="tab-link" onclick="switchTab(event, 'tabBD')">Tuyến đường Bình Dương</button>
+            </div>
+
+            <div class="tab-group-box tg-2">
+                <span class="group-label">Phường Xã quản lý / Xã</span>
+                <button class="tab-link" onclick="switchTab(event, 'tabTD_Xa')">Thủ Đức (Xã)</button>
+                <button class="tab-link" onclick="switchTab(event, 'tabBD_Xa')">Bình Dương (Xã)</button>
+            </div>
+
+            <div class="tab-group-box tg-3">
+                <span class="group-label">Tiện ích AI</span>
+                <button class="tab-link" onclick="switchTab(event, 'tabOCR')">Trích tọa độ ảnh GPS</button>
+            </div>
+        </div>
     </div>
 
-    <!-- TAB: THỦ ĐỨC -->
     <div id="tabTD" class="tab-content active">
         <div class="search-grid">
-            <div class="form-group">
-                <label>Tên đường (viết tắt/có dấu)</label>
-                <input type="text" id="inTD_Street" placeholder="Ví dụ: vvh hoặc Võ Văn Hát...">
-            </div>
-            <div class="form-group">
-                <label>Phường / Khu vực</label>
-                <input type="text" id="inTD_Ward" placeholder="Ví dụ: Linh Trung...">
-            </div>
-            <div class="form-group">
-                <label>Đơn vị duy tu</label>
-                <input type="text" id="inTD_Comp" placeholder="Ví dụ: CVCX...">
-            </div>
+            <div class="form-group"><label>Tên đường (viết tắt/có dấu)</label><input type="text" id="inTD_Street" placeholder="Ví dụ: vvh hoặc Võ Văn Hát..."></div>
+            <div class="form-group"><label>Phường / Khu vực</label><input type="text" id="inTD_Ward" placeholder="Ví dụ: Linh Trung..."></div>
+            <div class="form-group"><label>Đơn vị duy tu</label><input type="text" id="inTD_Comp" placeholder="Ví dụ: CVCX..."></div>
         </div>
         <div style="margin-bottom: 10px; font-weight: 600;" id="countTD">Tìm thấy 0 tuyến đường</div>
-        <div class="table-container" id="contTD" style="display:none">
-            <table>
-                <thead id="headTD"></thead>
-                <tbody id="bodyTD"></tbody>
-            </table>
-        </div>
+        <div class="table-container" id="contTD" style="display:none"><table><thead id="headTD"></thead><tbody id="bodyTD"></tbody></table></div>
         <div id="emptyTD" style="display:none; text-align:center; padding:20px; color:red;">Không tìm thấy dữ liệu phù hợp.</div>
     </div>
 
-    <!-- TAB: BÌNH DƯƠNG -->
     <div id="tabBD" class="tab-content">
         <div class="search-grid">
-            <div class="form-group">
-                <label>Tên đường (viết tắt/có dấu)</label>
-                <input type="text" id="inBD_Street" placeholder="Ví dụ: ntmk hoặc Nguyễn Thị Minh Khai...">
-            </div>
-            <div class="form-group">
-                <label>Phường / Xã</label>
-                <input type="text" id="inBD_Ward" placeholder="Ví dụ: Thủ Dầu Một...">
-            </div>
-            <div class="form-group">
-                <label>Đơn vị duy tu</label>
-                <input type="text" id="inBD_Comp" placeholder="Ví dụ: Công viên...">
-            </div>
+            <div class="form-group"><label>Tên đường (viết tắt/có dấu)</label><input type="text" id="inBD_Street" placeholder="Ví dụ: ntmk hoặc Nguyễn Thị Minh Khai..."></div>
+            <div class="form-group"><label>Phường / Xã</label><input type="text" id="inBD_Ward" placeholder="Ví dụ: Thủ Dầu Một..."></div>
+            <div class="form-group"><label>Đơn vị duy tu</label><input type="text" id="inBD_Comp" placeholder="Ví dụ: Công viên..."></div>
         </div>
         <div style="margin-bottom: 10px; font-weight: 600;" id="countBD">Tìm thấy 0 tuyến đường</div>
-        <div class="table-container" id="contBD" style="display:none">
-            <table>
-                <thead id="headBD"></thead>
-                <tbody id="bodyBD"></tbody>
-            </table>
-        </div>
+        <div class="table-container" id="contBD" style="display:none"><table><thead id="headBD"></thead><tbody id="bodyBD"></tbody></table></div>
         <div id="emptyBD" style="display:none; text-align:center; padding:20px; color:red;">Không tìm thấy dữ liệu phù hợp.</div>
     </div>
 
-    <!-- TAB: OCR -->
+
+    <div id="tabTD_Xa" class="tab-content">
+        <div class="search-grid">
+            <div class="form-group"><label>Tên đường (viết tắt/có dấu)</label><input type="text" id="inTD_Xa_Street" placeholder="Ví dụ: vvh hoặc Võ Văn Hát..."></div>
+            <div class="form-group"><label>Phường / Khu vực</label><input type="text" id="inTD_Xa_Ward" placeholder="Ví dụ: Linh Trung..."></div>
+            <div class="form-group"><label>Đơn vị duy tu</label><input type="text" id="inTD_Xa_Comp" placeholder="Ví dụ: CVCX..."></div>
+        </div>
+        <div style="margin-bottom: 10px; font-weight: 600;" id="countTD_Xa">Tìm thấy 0 tuyến đường</div>
+        <div class="table-container" id="contTD_Xa" style="display:none"><table><thead id="headTD_Xa"></thead><tbody id="bodyTD_Xa"></tbody></table></div>
+        <div id="emptyTD_Xa" style="display:none; text-align:center; padding:20px; color:red;">Không tìm thấy dữ liệu phù hợp.</div>
+    </div>
+
+    <div id="tabBD_Xa" class="tab-content">
+        <div class="search-grid">
+            <div class="form-group"><label>Tên đường (viết tắt/có dấu)</label><input type="text" id="inBD_Xa_Street" placeholder="Ví dụ: ntmk hoặc Nguyễn Thị Minh Khai..."></div>
+            <div class="form-group"><label>Phường / Xã</label><input type="text" id="inBD_Xa_Ward" placeholder="Ví dụ: Thủ Dầu Một..."></div>
+            <div class="form-group"><label>Đơn vị duy tu</label><input type="text" id="inBD_Xa_Comp" placeholder="Ví dụ: Công viên..."></div>
+        </div>
+        <div style="margin-bottom: 10px; font-weight: 600;" id="countBD_Xa">Tìm thấy 0 tuyến đường</div>
+        <div class="table-container" id="contBD_Xa" style="display:none"><table><thead id="headBD_Xa"></thead><tbody id="bodyBD_Xa"></tbody></table></div>
+        <div id="emptyBD_Xa" style="display:none; text-align:center; padding:20px; color:red;">Không tìm thấy dữ liệu phù hợp.</div>
+    </div>
+
+
     <div id="tabOCR" class="tab-content">
         <div class="ocr-layout">
             <div class="ocr-input-side">
@@ -285,14 +342,22 @@
 <canvas id="helperCanvas" style="display:none;"></canvas>
 
 <script>
-    // --- CẤU HÌNH ĐƯỜNG DẪN DỮ LIỆU ---
-    const URL_TD = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTI_VZZmUIfUsP7T-70cOutrS8Bovdm6-LsHmQkvNB4Tf8TQILOadThikMw59YLDsMwgYzS_xkI3q3Y/pub?gid=195844642&single=true&output=tsv';
-    const URL_BD = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTqzJojgx6myCBljQXJbMqjsC2Ru3gSJ0pOT7zLWgUoVYIwWCIb1QkAtd2QlRPfvQ8OaeOuPsTDCGwI/pub?gid=195844642&single=true&output=tsv';
+    // --- CẤU HÌNH ĐƯỜNG DẪN DỮ LIỆU ĐÃ ĐỒNG BỘ ---
+    const CONFIG = {
+        'TD': { url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSSDBsLFYFoxn-SE2MQDETNgQrri1V3PxqEhWKxBghGXJr1FNb4LkjXg1PcawYnli_yFVQeyv2-PMv7/pub?gid=195844642&single=true&output=tsv', statusId: 'statusTD', name: 'Thủ Đức' },
+        'BD': { url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKUfkZtVRIva2X9gwaOKo2ZNMHw2h1BZce-9-MQ4rei0kWY339PCY9WDWK7vjM7uQyRPAyZVPqDUU-/pub?gid=195844642&single=true&output=tsv', statusId: 'statusBD', name: 'Bình Dương' },
+        'TD_Xa': { url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTI_VZZmUIfUsP7T-70cOutrS8Bovdm6-LsHmQkvNB4Tf8TQILOadThikMw59YLDsMwgYzS_xkI3q3Y/pub?gid=195844642&single=true&output=tsv', statusId: 'statusTD_Xa', name: 'Thủ Đức (Xã)' },
+        'BD_Xa': { url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTqzJojgx6myCBljQXJbMqjsC2Ru3gSJ0pOT7zLWgUoVYIwWCIb1QkAtd2QlRPfvQ8OaeOuPsTDCGwI/pub?gid=195844642&single=true&output=tsv', statusId: 'statusBD_Xa', name: 'Bình Dương (Xã)' }
+    };
 
-    let dataTD = [], headersTD = [];
-    let dataBD = [], headersBD = [];
+    let store = {
+        'TD': { data: [], headers: [] },
+        'BD': { data: [], headers: [] },
+        'TD_Xa': { data: [], headers: [] },
+        'BD_Xa': { data: [], headers: [] }
+    };
 
-    // --- HÀM TIỆN ÍCH ---
+    // --- CHUYỂN TAB ---
     function switchTab(evt, tabId) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
@@ -300,6 +365,7 @@
         evt.currentTarget.classList.add('active');
     }
 
+    // --- CHUẨN HÓA TIẾNG VIỆT ---
     function cleanVN(str) {
         if (!str) return '';
         str = str.toLowerCase().trim();
@@ -317,53 +383,44 @@
         return str.split(/\s+/).map(w => w[0]).join('').toLowerCase();
     }
 
-    // --- TẢI DỮ LIỆU ---
-    async function loadSheet(url, type) {
-        try {
-            const res = await fetch(url);
-            const text = await res.text();
-            const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== "");
-            const parsed = lines.map(l => l.split('\t'));
-            
-            if (type === 'TD') {
-                headersTD = parsed[0];
-                dataTD = parsed.slice(1).map(row => {
-                    let o = {}; headersTD.forEach((h, i) => o[h] = row[i] || '');
+    // --- TẢI DATA TUYẾN ĐƯỜNG ---
+    async function loadAllSheets() {
+        for (const key in CONFIG) {
+            try {
+                const res = await fetch(CONFIG[key].url);
+                const text = await res.text();
+                const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== "");
+                const parsed = lines.map(l => l.split('\t'));
+                
+                store[key].headers = parsed[0];
+                store[key].data = parsed.slice(1).map(row => {
+                    let o = {}; store[key].headers.forEach((h, i) => o[h] = row[i] || '');
                     return o;
                 });
-                document.getElementById('headTD').innerHTML = '<tr>'+headersTD.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-                updateStatus('statusTD', 'TD', dataTD.length);
-                search('TD');
-            } else {
-                headersBD = parsed[0];
-                dataBD = parsed.slice(1).map(row => {
-                    let o = {}; headersBD.forEach((h, i) => o[h] = row[i] || '');
-                    return o;
-                });
-                document.getElementById('headBD').innerHTML = '<tr>'+headersBD.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-                updateStatus('statusBD', 'BD', dataBD.length);
-                search('BD');
+
+                document.getElementById(`head${key}`).innerHTML = '<tr>'+store[key].headers.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+                
+                const elStatus = document.getElementById(CONFIG[key].statusId);
+                elStatus.className = 'status-badge st-success';
+                elStatus.innerText = `${CONFIG[key].name}: ${store[key].data.length} tuyến`;
+
+                search(key);
+            } catch (e) {
+                const elStatus = document.getElementById(CONFIG[key].statusId);
+                elStatus.className = 'status-badge st-error';
+                elStatus.innerText = `Lỗi tải ${CONFIG[key].name}!`;
             }
-        } catch (e) {
-            document.getElementById(type === 'TD' ? 'statusTD' : 'statusBD').className = 'status-badge st-error';
-            document.getElementById(type === 'TD' ? 'statusTD' : 'statusBD').innerText = 'Lỗi tải dữ liệu!';
         }
     }
 
-    function updateStatus(id, name, len) {
-        const el = document.getElementById(id);
-        el.className = 'status-badge st-success';
-        el.innerText = `${name === 'TD' ? 'Thủ Đức' : 'Bình Dương'}: ${len} tuyến`;
-    }
-
-    // --- TÌM KIẾM ---
+    // --- LOGIC TÌM KIẾM DÙNG CHUNG ---
     function search(type) {
         const queryStreet = cleanVN(document.getElementById(`in${type}_Street`).value);
         const queryWard = cleanVN(document.getElementById(`in${type}_Ward`).value);
         const queryComp = cleanVN(document.getElementById(`in${type}_Comp`).value);
 
-        const targetData = type === 'TD' ? dataTD : dataBD;
-        const targetHeaders = type === 'TD' ? headersTD : headersBD;
+        const targetData = store[type].data;
+        const targetHeaders = store[type].headers;
 
         const colStreet = targetHeaders.find(h => cleanVN(h).includes('duong')) || targetHeaders[1];
         const colWard = targetHeaders.find(h => cleanVN(h).includes('phuong') || cleanVN(h).includes('xa')) || targetHeaders[2];
@@ -381,10 +438,10 @@
             return mS && mW && mC;
         });
 
-        render(type, filtered, targetHeaders);
+        renderTable(type, filtered, targetHeaders);
     }
 
-    function render(type, data, headers) {
+    function renderTable(type, data, headers) {
         const body = document.getElementById(`body${type}`);
         const count = document.getElementById(`count${type}`);
         const cont = document.getElementById(`cont${type}`);
@@ -402,7 +459,7 @@
         }
     }
 
-    // --- XỬ LÝ OCR ---
+    // --- XỬ LÝ OCR (TRÍCH TỌA ĐỘ) ---
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
 
@@ -431,7 +488,6 @@
                 canvas.width = img.width; canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
 
-                // Tiền xử lý
                 const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const d = imgData.data;
                 for (let i = 0; i < d.length; i += 4) {
@@ -466,7 +522,7 @@
         if (latM && lngM) {
             const lat = latM[1], lng = lngM[1];
             document.getElementById('ocrCoords').innerText = `${lat}, ${lng}`;
-            document.getElementById('btnMaps').href = `https://www.google.com/maps?q=${lat},${lng}`;
+            document.getElementById('btnMaps').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
             document.getElementById('resGps').innerText = `${lat}°N, ${lng}°E`;
             document.getElementById('resTime').innerText = timeM ? timeM[0] : "---";
             document.getElementById('resDate').innerText = dateM ? dateM[0] : "---";
@@ -485,14 +541,15 @@
         navigator.clipboard.writeText(t).then(() => alert("Đã sao chép: " + t));
     }
 
-    // Khởi tạo
-    loadSheet(URL_TD, 'TD');
-    loadSheet(URL_BD, 'BD');
+    // Khởi chạy hệ thống tải dữ liệu nền
+    loadAllSheets();
 
-    // Gán sự kiện tìm kiếm
-    ['inTD_Street', 'inTD_Ward', 'inTD_Comp', 'inBD_Street', 'inBD_Ward', 'inBD_Comp'].forEach(id => {
-        document.getElementById(id).addEventListener('input', () => search(id.includes('TD') ? 'TD' : 'BD'));
-    });
+    // Đăng ký sự kiện tìm kiếm tự động cho các bộ lọc đầu vào
+    for (const key in CONFIG) {
+        ['Street', 'Ward', 'Comp'].forEach(field => {
+            document.getElementById(`in${key}_${field}`).addEventListener('input', () => search(key));
+        });
+    }
 </script>
 </body>
 </html>
